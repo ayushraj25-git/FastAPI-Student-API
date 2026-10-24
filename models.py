@@ -9,3 +9,4 @@ class Student(Base):
     name = Column(String, nullable=False)
     branch = Column(String, nullable=False)
     year = Column(Integer, nullable=False)
+    email = Column(String, nullable=True)

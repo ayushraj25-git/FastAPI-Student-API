@@ -17,9 +17,10 @@ def create_student(
     name: str,
     branch: str,
     year: int,
+    email:str|None=None,
     db: Session = Depends(get_db)
 ):
-    student = Student(name=name, branch=branch, year=year)
+    student = Student(name=name, branch=branch, year=year,email=email)
     db.add(student)
     db.commit()
     db.refresh(student)
@@ -28,7 +29,8 @@ def create_student(
         "id": student.id,
         "name": student.name,
         "branch": student.branch,
-        "year": student.year
+        "year": student.year,
+        "email":student.email
     }
 
 @app.get("/students")
@@ -40,7 +42,8 @@ def get_students(db: Session = Depends(get_db)):
             "id": student.id,
             "name": student.name,
             "branch": student.branch,
-            "year": student.year
+            "year": student.year,
+            "email":student.email
         }
         for student in students
     ]
@@ -64,7 +67,8 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
         "id": student.id,
         "name": student.name,
         "branch": student.branch,
-        "year": student.year
+        "year": student.year,
+        "email":student.email
     }
 
 
@@ -75,6 +79,7 @@ def update_student(
     name: str,
     branch: str,
     year: int,
+    email:str|None=None,
     db: Session = Depends(get_db)
 ):
     student = db.query(Student).filter(
@@ -91,6 +96,7 @@ def update_student(
     student.name = name
     student.branch = branch
     student.year = year
+    student.email=email
 
     db.commit()
     db.refresh(student)
@@ -100,7 +106,8 @@ def update_student(
         "id": student.id,
         "name": student.name,
         "branch": student.branch,
-        "year": student.year
+        "year": student.year,
+        "email":student.email
     }
 
 
