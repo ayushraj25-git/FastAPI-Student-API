@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from database_orm import engine, Base, get_db
 from models import Student
+from schemas import StudentCreate
 
 Base.metadata.create_all(bind=engine)
 
@@ -12,15 +13,19 @@ app = FastAPI()
 def home():
     return {"message": "SQLAlchemy ORM API is running"}
 
+
 @app.post("/students")
 def create_student(
-    name: str,
-    branch: str,
-    year: int,
-    email:str|None=None,
+    data: StudentCreate,
     db: Session = Depends(get_db)
 ):
-    student = Student(name=name, branch=branch, year=year,email=email)
+    student = Student(
+        name=data.name,
+        branch=data.branch,
+        year=data.year,
+        email=data.email
+    )
+
     db.add(student)
     db.commit()
     db.refresh(student)
@@ -30,8 +35,9 @@ def create_student(
         "name": student.name,
         "branch": student.branch,
         "year": student.year,
-        "email":student.email
+        "email": student.email
     }
+
 
 @app.get("/students")
 def get_students(db: Session = Depends(get_db)):
@@ -73,13 +79,11 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
 
 
 
+
 @app.put("/students/{student_id}")
 def update_student(
     student_id: int,
-    name: str,
-    branch: str,
-    year: int,
-    email:str|None=None,
+    data: StudentCreate,
     db: Session = Depends(get_db)
 ):
     student = db.query(Student).filter(
@@ -93,10 +97,10 @@ def update_student(
             detail="Student not found"
         )
 
-    student.name = name
-    student.branch = branch
-    student.year = year
-    student.email=email
+    student.name = data.name
+    student.branch = data.branch
+    student.year = data.year
+    student.email = data.email
 
     db.commit()
     db.refresh(student)
@@ -107,8 +111,9 @@ def update_student(
         "name": student.name,
         "branch": student.branch,
         "year": student.year,
-        "email":student.email
+        "email": student.email
     }
+
 
 
 

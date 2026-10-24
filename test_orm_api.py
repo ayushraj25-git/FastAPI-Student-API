@@ -16,10 +16,11 @@ def test_home():
 def test_create_student():
     response = client.post(
         "/students",
-        params={
+        json={
             "name": "Test Student",
             "branch": "CSE",
-            "year": 3
+            "year": 3,
+            "email":"test@example.com"
         }
     )
 
@@ -45,10 +46,11 @@ def test_get_student_not_found():
 def test_update_student_not_found():
     response = client.put(
         "/students/999999",
-        params={
+        json={
             "name": "Updated Student",
             "branch": "CSE",
-            "year": 3
+            "year": 3,
+            "email":"updated@example.com"
         }
     )
 
