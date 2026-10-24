@@ -1,16 +1,21 @@
 # FastAPI Student Management API
 
-A RESTful Student Management API built with **Python, FastAPI, and SQLite**, featuring JWT authentication, secure password hashing, SQLAlchemy ORM, input validation, and automated testing.
+A RESTful Student Management API built with **Python, FastAPI, and SQLite**, featuring JWT authentication, secure password hashing, SQLAlchemy ORM, student-project relationships, input validation, and automated testing.
 
 ## Features
 
 - Student CRUD operations (Create, Read, Update, Delete)
 - SQLite database integration
 - SQLAlchemy ORM models and database sessions
+- One-to-many relationship between students and projects
+- Project creation and retrieval endpoints
+- Retrieve all projects belonging to a student
+- Foreign key constraints and referential integrity
 - JWT-based authentication
 - Password hashing using Argon2
 - Protected API endpoints using bearer tokens
 - Input validation using Pydantic
+- Email validation using Pydantic EmailStr
 - HTTP error handling (400, 401, 404, 422)
 - Automated testing using Pytest
 - Environment variables for secret-key configuration
@@ -38,6 +43,7 @@ FastAPI-Student-API/
 ├── database.py
 ├── database_orm.py
 ├── models.py
+├── schemas.py
 ├── orm_api.py
 ├── create_db.py
 ├── create_tables.py
@@ -114,13 +120,13 @@ python -m uvicorn auth_main:app --reload --port 8000
 python -m uvicorn main:app --reload --port 8001
 ```
 
-### Terminal 3 — SQLAlchemy ORM Practice API
+### Terminal 3 — SQLAlchemy ORM API
 
 ```bash
 python -m uvicorn orm_api:app --reload --port 8002
 ```
 
-The ORM API uses the `students_orm` table in `students.db` and provides a separate practice implementation of student CRUD operations.
+The ORM API provides student CRUD operations and project management using SQLAlchemy ORM. It uses the `students_orm` and `student_projects` tables in the SQLite database.
 
 ## API Documentation
 
@@ -132,7 +138,7 @@ Open the interactive Swagger documentation after starting the corresponding serv
 
 ## SQLAlchemy ORM Endpoints
 
-The ORM practice API supports:
+### Student endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -143,12 +149,32 @@ The ORM practice API supports:
 | PUT | `/students/{student_id}` | Update a student |
 | DELETE | `/students/{student_id}` | Delete a student |
 
+### Project endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/projects` | Create a project for a student |
+| GET | `/projects` | Retrieve all projects |
+| GET | `/students/{student_id}/projects` | Retrieve projects belonging to a student |
+
+Project creation checks whether the specified student exists. An invalid student ID returns HTTP 404.
+
+## Student-Project Relationship
+
+The project uses a one-to-many relationship:
+
+- One student can have multiple projects.
+- Each project belongs to one student.
+- SQLAlchemy `relationship()` connects the `Student` and `Project` models.
+- `ForeignKey` links `student_projects.student_id` to `students_orm.id`.
+- SQLite foreign key enforcement helps prevent projects from referencing nonexistent students.
+
 ## Authentication Flow
 
 1. Register a user using `POST /signup`.
 2. Log in using `POST /login`.
 3. Copy the returned access token.
-4. Click **Authorize** in the Student API Swagger documentation and enter the bearer token.
+4. Click **Authorize** in Swagger and enter the bearer token.
 5. Access the protected student endpoints.
 
 The JWT access token expires after 30 minutes.
@@ -161,9 +187,9 @@ Run all automated tests:
 python -m pytest -v
 ```
 
-**Latest verified result:** 39 tests passed across the authentication, student API, and ORM API test suites.
+**Latest verified result: 45 tests passed.**
 
-The test suite covers authentication, CRUD operations, input validation, and error handling.
+The test suites cover authentication, student CRUD operations, input validation, HTTP error handling, SQLAlchemy ORM operations, project creation, student-project relationships, and invalid student references.
 
 ## Learning Outcomes
 
@@ -172,11 +198,13 @@ This project demonstrates practical experience with:
 - REST API development using FastAPI
 - SQLite database operations and SQLAlchemy ORM
 - CRUD operations and database sessions
+- One-to-many database relationships
+- Foreign key constraints and referential integrity
 - JWT authentication and password security
 - Request validation and HTTP error handling
 - Environment variables and dependency management
 - Automated testing with Pytest
-- Version control and GitHub collaboration workflows
+- Version control and GitHub workflows
 
 ## Author
 
@@ -185,4 +213,5 @@ This project demonstrates practical experience with:
 GitHub: https://github.com/ayushraj25-git
 
 Repository: https://github.com/ayushraj25-git/FastAPI-Student-API
+
 
