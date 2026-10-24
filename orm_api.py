@@ -3,7 +3,8 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from database_orm import engine, Base, get_db
 from models import Student
-from schemas import StudentCreate
+from models import Project
+from schemas import StudentCreate,ProjectCreate
 
 Base.metadata.create_all(bind=engine)
 
@@ -138,3 +139,81 @@ def delete_student(
     db.commit()
 
     return {"message": "Student deleted successfully"}
+
+
+
+
+from fastapi import HTTPException
+
+
+@app.post("/projects")
+def create_project(
+    data: ProjectCreate,
+    db: Session = Depends(get_db)
+):
+    student = db.query(Student).filter(
+        Student.id == data.student_id
+    ).first()
+
+    if student is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+
+    project = Project(
+        title=data.title,
+        student_id=data.student_id
+    )
+
+    db.add(project)
+    db.commit()
+    db.refresh(project)
+
+    return {
+        "id": project.id,
+        "title": project.title,
+        "student_id": project.student_id
+    }
+
+
+
+@app.get("/projects")
+def get_projects(db: Session = Depends(get_db)):
+    projects = db.query(Project).all()
+
+    return [
+        {
+            "id": project.id,
+            "title": project.title,
+            "student_id": project.student_id
+        }
+        for project in projects
+    ]
+
+
+
+@app.get("/students/{student_id}/projects")
+def get_student_projects(
+    student_id: int,
+    db: Session = Depends(get_db)
+):
+    student = db.query(Student).filter(
+        Student.id == student_id
+    ).first()
+
+    if student is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+
+    return [
+        {
+            "id": project.id,
+            "title": project.title,
+            "student_id": project.student_id
+        }
+        for project in student.projects
+    ]
+

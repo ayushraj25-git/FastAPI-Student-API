@@ -7,3 +7,8 @@ class StudentCreate(BaseModel):
     branch: str
     year: int
     email: EmailStr | None = None
+
+
+class ProjectCreate(BaseModel):
+    title: str
+    student_id: int

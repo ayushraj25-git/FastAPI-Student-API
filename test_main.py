@@ -251,6 +251,26 @@ def test_patch_invalid_year(sample_student, auth_headers):
     assert response.status_code == 422
 
 
+def test_patch_year_non_integer(sample_student, auth_headers):
+    create_response = client.post(
+        "/student",
+        json=sample_student,
+        headers=auth_headers
+    )
+
+    student_id = create_response.json()["student_id"]
+
+    response = client.patch(
+        f"/student/{student_id}",
+        json={"year": "abc"},
+        headers=auth_headers
+    )
+
+    assert response.status_code == 422
+
+
+
+
 
 
 
@@ -319,6 +339,26 @@ def test_patch_short_name(sample_student, auth_headers):
     )
 
     assert response.status_code == 422
+
+
+def test_patch_short_branch(sample_student, auth_headers):
+    create_response = client.post(
+        "/student",
+        json=sample_student,
+        headers=auth_headers
+    )
+
+    student_id = create_response.json()["student_id"]
+
+    response = client.patch(
+        f"/student/{student_id}",
+        json={"branch": "A"},
+        headers=auth_headers
+    )
+
+    assert response.status_code == 422
+
+
 
 
 
