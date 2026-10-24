@@ -1,45 +1,59 @@
 # FastAPI Student Management API
 
-A RESTful Student Management API built with **FastAPI, Python, and SQLite**, featuring JWT authentication, secure password hashing, input validation, and automated testing.
+A RESTful Student Management API built with **Python, FastAPI, and SQLite**, featuring JWT authentication, secure password hashing, SQLAlchemy ORM, input validation, and automated testing.
 
 ## Features
 
 - Student CRUD operations (Create, Read, Update, Delete)
 - SQLite database integration
+- SQLAlchemy ORM models and database sessions
 - JWT-based authentication
 - Password hashing using Argon2
 - Protected API endpoints using bearer tokens
 - Input validation using Pydantic
-- Proper HTTP error handling
-- Automated tests using Pytest
+- HTTP error handling (400, 401, 404, 422)
+- Automated testing using Pytest
 - Environment variables for secret-key configuration
+- Dependency management using `requirements.txt`
 
 ## Tech Stack
 
 - **Language:** Python
 - **Framework:** FastAPI
 - **Database:** SQLite
-- **Authentication:** JWT
+- **ORM:** SQLAlchemy
+- **Authentication:** JWT (JSON Web Tokens)
 - **Password Hashing:** Argon2
-- **Testing:** Pytest
 - **Validation:** Pydantic
+- **Testing:** Pytest
+- **Version Control:** Git and GitHub
 
 ## Project Structure
 
 ```text
-FastAPI_Project/
+FastAPI-Student-API/
 ├── main.py
 ├── auth_main.py
 ├── auth_utils.py
 ├── database.py
+├── database_orm.py
+├── models.py
+├── orm_api.py
 ├── create_db.py
+├── create_tables.py
 ├── create_users_table.py
 ├── insert_student.py
 ├── read_students.py
 ├── update_students.py
 ├── delete_student.py
+├── orm_insert.py
+├── orm_read.py
+├── orm_update.py
+├── orm_delete.py
 ├── test_main.py
 ├── test_auth.py
+├── test_orm_api.py
+├── requirements.txt
 ├── .gitignore
 └── README.md
 ```
@@ -65,7 +79,7 @@ python -m venv .venv
 ### 3. Install dependencies
 
 ```bash
-python -m pip install fastapi "uvicorn[standard]" PyJWT pwdlib[argon2] python-dotenv pytest httpx
+python -m pip install -r requirements.txt
 ```
 
 ## Environment Configuration
@@ -76,7 +90,7 @@ Create a `.env` file in the project root:
 SECRET_KEY=replace_with_a_secure_random_secret
 ```
 
-Generate a secure secret key using:
+Generate a secure secret key:
 
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(32))"
@@ -84,55 +98,91 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 Copy the generated value into `.env`. Never commit your actual secret key to GitHub.
 
-## Running the Application
+## Running the Applications
 
-Open two terminals from the project directory and activate the virtual environment in each.
+Activate the virtual environment in each terminal.
 
-**Terminal 1 — Authentication API**
+### Terminal 1 — Authentication API
 
 ```bash
 python -m uvicorn auth_main:app --reload --port 8000
 ```
 
-**Terminal 2 — Student API**
+### Terminal 2 — Student Management API
 
 ```bash
 python -m uvicorn main:app --reload --port 8001
 ```
 
+### Terminal 3 — SQLAlchemy ORM Practice API
+
+```bash
+python -m uvicorn orm_api:app --reload --port 8002
+```
+
+The ORM API uses the `students_orm` table in `students.db` and provides a separate practice implementation of student CRUD operations.
+
 ## API Documentation
 
-After starting the servers, open the interactive Swagger documentation:
+Open the interactive Swagger documentation after starting the corresponding server:
 
-- Authentication API: http://127.0.0.1:8000/docs
-- Student API: http://127.0.0.1:8001/docs
+- **Authentication API:** http://127.0.0.1:8000/docs
+- **Student Management API:** http://127.0.0.1:8001/docs
+- **SQLAlchemy ORM API:** http://127.0.0.1:8002/docs
+
+## SQLAlchemy ORM Endpoints
+
+The ORM practice API supports:
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | API health check |
+| POST | `/students` | Create a student |
+| GET | `/students` | Retrieve all students |
+| GET | `/students/{student_id}` | Retrieve a student by ID |
+| PUT | `/students/{student_id}` | Update a student |
+| DELETE | `/students/{student_id}` | Delete a student |
 
 ## Authentication Flow
 
 1. Register a user using `POST /signup`.
 2. Log in using `POST /login`.
 3. Copy the returned access token.
-4. Use the **Authorize** button in the Student API Swagger documentation and enter the bearer token.
+4. Click **Authorize** in the Student API Swagger documentation and enter the bearer token.
 5. Access the protected student endpoints.
 
 The JWT access token expires after 30 minutes.
 
 ## Testing
 
-Run the test suite:
+Run all automated tests:
 
 ```bash
 python -m pytest -v
 ```
 
-**Latest test result:** 33 passed.
+**Latest verified result:** 39 tests passed across the authentication, student API, and ORM API test suites.
+
+The test suite covers authentication, CRUD operations, input validation, and error handling.
 
 ## Learning Outcomes
 
-This project demonstrates practical experience with REST APIs, database operations, authentication, password security, request validation, environment variables, Git, and automated testing.
+This project demonstrates practical experience with:
+
+- REST API development using FastAPI
+- SQLite database operations and SQLAlchemy ORM
+- CRUD operations and database sessions
+- JWT authentication and password security
+- Request validation and HTTP error handling
+- Environment variables and dependency management
+- Automated testing with Pytest
+- Version control and GitHub collaboration workflows
 
 ## Author
 
 **Ayush Raj**
 
-GitHub: [@ayushraj25-git](https://github.com/ayushraj25-git)
+GitHub: https://github.com/ayushraj25-git
+
+Repository: https://github.com/ayushraj25-git/FastAPI-Student-API
+
