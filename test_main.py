@@ -418,3 +418,13 @@ def test_cors_preflight():
     assert response.headers["access-control-allow-origin"] == (
         "http://localhost:3000"
     )    
+
+
+def test_get_students_without_token():
+    response = client.get("/student")
+    assert response.status_code == 401
+
+
+def test_get_student_without_token():
+    response = client.get("/student/1")
+    assert response.status_code == 401    
