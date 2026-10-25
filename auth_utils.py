@@ -2,20 +2,10 @@
 import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-
-if not SECRET_KEY:
-    raise RuntimeError(
-        "SECRET_KEY is missing. Please set it in your .env file."
-    )
-ALGORITHM = "HS256"
+from config import SECRET_KEY, ALGORITHM
 
 security = HTTPBearer()
+
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security)
@@ -37,3 +27,4 @@ def get_current_user(
         )
 
     return username
+

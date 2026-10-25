@@ -5,20 +5,8 @@ from database import get_connection
 import sqlite3
 import jwt
 from datetime import datetime, timedelta, timezone
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
+from config import SECRET_KEY, ALGORITHM
 app = FastAPI()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-
-if not SECRET_KEY:
-    raise RuntimeError(
-        "SECRET_KEY is missing. Please set it in your .env file."
-    )
-
-ALGORITHM = "HS256"
 password_hash = PasswordHash.recommended()
 
 
