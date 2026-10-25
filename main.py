@@ -3,9 +3,17 @@ from pydantic import BaseModel, Field, StringConstraints
 from typing import Annotated
 from database import get_connection
 from auth_utils import get_current_user
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app=FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.get("/")
 def home():
     return{"message":"Hello Ayush"}
