@@ -428,3 +428,15 @@ def test_get_students_without_token():
 def test_get_student_without_token():
     response = client.get("/student/1")
     assert response.status_code == 401    
+
+
+
+def test_get_students_with_invalid_token():
+    response = client.get(
+        "/student",
+        headers={
+            "Authorization": "Bearer invalid.token.value"
+        }
+    )
+
+    assert response.status_code == 401    
