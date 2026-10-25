@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status, HTTPException,Depends
 from pydantic import BaseModel, Field, StringConstraints
 from typing import Annotated
-from database import get_connection
+from database import database_connection
 from auth_utils import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,11 +24,11 @@ def about():
 
 @app.get("/student")
 def get_students(username: str = Depends(get_current_user)):
-    conn=get_connection()
-    cursor=conn.cursor()
-    cursor.execute("SELECT * FROM students")
-    students=cursor.fetchall()
-    conn.close()
+    with database_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM students")
+        students = cursor.fetchall()
+
     return [dict(student) for student in students]
     
     
@@ -38,16 +38,20 @@ def get_student(
     student_id: int,
     username: str = Depends(get_current_user)
 ):
-    conn=get_connection()
-    cursor=conn.cursor()
-    cursor.execute("SELECT * FROM students where id = ?", (student_id,))
-    student = cursor.fetchone()
-    conn.close()
+    with database_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM students WHERE id = ?",
+            (student_id,)
+        )
+        student = cursor.fetchone()
+
     if student is None:
-     raise HTTPException(
-        status_code=404,
-        detail="Student not found"
-    )
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+
     return dict(student)
 
 #query parameters
@@ -78,19 +82,22 @@ def add_student(
     student: Student,
     username: str = Depends(get_current_user)
 ):
-    conn=get_connection()
-    cursor=conn.cursor()
+    with database_connection() as conn:
+        cursor = conn.cursor()
 
+        cursor.execute(
+            "INSERT INTO students (name, branch, year) VALUES (?, ?, ?)",
+            (student.name, student.branch, student.year)
+        )
 
-    cursor.execute(
-    "INSERT INTO students (name, branch, year) VALUES (?, ?, ?)",
-    (student.name, student.branch, student.year)
-    )
+        conn.commit()
+        student_id = cursor.lastrowid
 
-    conn.commit()
-    student_id=cursor.lastrowid
-    conn.close()
-    return{"message":"Student added successfully","student_id":student_id,"student":student}    
+    return {
+        "message": "Student added successfully",
+        "student_id": student_id,
+        "student": student
+    }  
 
 @app.put("/student/{student_id}")
 def update_student(
@@ -98,22 +105,21 @@ def update_student(
     student: Student,
     username: str = Depends(get_current_user)
 ):
-    conn = get_connection()
-    cursor = conn.cursor()
+    with database_connection() as conn:
+        cursor = conn.cursor()
 
-    cursor.execute(
-        "UPDATE students SET name = ?, branch = ?, year = ? WHERE id = ?",
-        (student.name, student.branch, student.year, student_id)
-    )
+        cursor.execute(
+            "UPDATE students SET name = ?, branch = ?, year = ? WHERE id = ?",
+            (student.name, student.branch, student.year, student_id)
+        )
 
-    conn.commit()
+        if cursor.rowcount == 0:
+            raise HTTPException(
+                status_code=404,
+                detail="Student not found"
+            )
 
-    if cursor.rowcount == 0:
-        conn.close()
-        raise HTTPException(status_code=404,detail="Student not found")
-        
-
-    conn.close()
+        conn.commit()
 
     return {"message": "Student updated successfully"}
 
@@ -124,37 +130,33 @@ def patch_student(
     student: StudentUpdate,
     username: str = Depends(get_current_user)
 ):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
     updates = student.model_dump(exclude_unset=True)
 
     if not updates:
-        conn.close()
         raise HTTPException(
             status_code=400,
             detail="No fields provided"
         )
 
-    fields = ", ".join(f"{field} = ?" for field in updates)
-    values = list(updates.values())
-    values.append(student_id)
+    with database_connection() as conn:
+        cursor = conn.cursor()
 
-    cursor.execute(
-        f"UPDATE students SET {fields} WHERE id = ?",
-        values
-    )
+        fields = ", ".join(f"{field} = ?" for field in updates)
+        values = list(updates.values())
+        values.append(student_id)
 
-    if cursor.rowcount == 0:
-        conn.close()
-        raise HTTPException(
-            status_code=404,
-            detail="Student not found"
+        cursor.execute(
+            f"UPDATE students SET {fields} WHERE id = ?",
+            values
         )
 
-    conn.commit()
-    conn.close()
+        if cursor.rowcount == 0:
+            raise HTTPException(
+                status_code=404,
+                detail="Student not found"
+            )
+
+        conn.commit()
 
     return {"message": "Student updated successfully"}
 
@@ -165,22 +167,21 @@ def delete_student(
     student_id: int,
     username: str = Depends(get_current_user)
 ):
+    with database_connection() as conn:
+        cursor = conn.cursor()
 
-    conn = get_connection()
-    cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM students WHERE id = ?",
+            (student_id,)
+        )
 
-    cursor.execute(
-        "DELETE FROM students WHERE id = ?",
-        (student_id,)
-    )
+        if cursor.rowcount == 0:
+            raise HTTPException(
+                status_code=404,
+                detail="Student not found"
+            )
 
-    conn.commit()
-
-    if cursor.rowcount == 0:
-        conn.close()
-        raise HTTPException(status_code=404,detail="Student not found")
-
-    conn.close()
+        conn.commit()
 
     return {"message": "Student deleted successfully"}
 

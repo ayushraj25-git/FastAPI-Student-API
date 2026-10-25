@@ -12,3 +12,14 @@ def get_connection():
     )
     conn.row_factory = sqlite3.Row
     return conn
+
+from contextlib import contextmanager
+
+
+@contextmanager
+def database_connection():
+    conn = get_connection()
+    try:
+        yield conn
+    finally:
+        conn.close()
