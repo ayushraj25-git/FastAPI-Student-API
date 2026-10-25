@@ -19,7 +19,11 @@ from contextlib import contextmanager
 @contextmanager
 def database_connection():
     conn = get_connection()
+
     try:
         yield conn
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
